@@ -1,6 +1,7 @@
 import cv2 as cv
 import numpy as np
 from scipy.interpolate import UnivariateSpline
+from main import Efeitos
 
 path = "../image/imagem.jpg"
 img = cv.imread(path)
@@ -141,49 +142,46 @@ def CartoonEffect(img):
 def CartoonHDR(img):
     return HDR(CartoonEffect(img))
 
-def SelectAndApplyEffect(number, img, intensity):
+def SelectAndApplyEffect(efeitos, img, intensity):
 
     """Recebe um némero referente ao efeito a ser executado, uma imagem a ser tratada
        e um parâmentro para ser inserido no método quando houver."""
 
-    if   number == "1":
+    if   efeitos == Efeitos.ef1:
         if intensity == "" :
             intensity = "1"
         return imageSmoothing(img, intensity)
-    elif number == "2":
+    elif efeitos == Efeitos.ef2:
         return imageFiltering(img)
-    elif number == "3":
+    elif efeitos == Efeitos.ef3:
         return bilateralFiltering(img)
-    elif number == "4":
+    elif efeitos == Efeitos.ef3: #Efeito incompleto
         return denoising(img)
-    elif number == "5":
+    elif efeitos == Efeitos.ef5:
         return greyscale(img)
-    elif number == "6":
+    elif efeitos == Efeitos.ef6:
         if intensity == "" :
             intensity = "1"
         return brigth(img, intensity)
-    elif number == "7":
+    elif efeitos == Efeitos.ef7:
         return sharpen(img)
-    elif number == "8":
+    elif efeitos == Efeitos.ef8:
         return sepia(img)
-    elif number == "9":
+    elif efeitos == Efeitos.ef9:
         return HDR(img)
-    elif number == "10":
+    elif efeitos == Efeitos.ef10:
         return InvertColors(img)
-    elif number == "11":
+    elif efeitos == Efeitos.ef11:
         return SummerEffect(img)
-    elif number == "12":
+    elif efeitos == Efeitos.ef12:
         return WinterEffect(img)
-    elif number == "13":
+    elif efeitos == Efeitos.ef13:
         return PencilSketchGrayEffect(img)
-    elif number == "14":
+    elif efeitos == Efeitos.ef14:
         return PencilSketchColorfulEffect(img)
-    elif number == "15":
+    elif efeitos == Efeitos.ef15:
         return CartoonEffect(img)
-    elif number == "16":
+    elif efeitos == Efeitos.ef16:
         return CartoonHDR(img)
-    elif number == "":
+    elif efeitos == "":
         return "Efeito não encontrado"
-
-#plot(img, sharpen(img))
-# cv.imwrite('../image/resultado/teste.jpg', InvertColors(img))
