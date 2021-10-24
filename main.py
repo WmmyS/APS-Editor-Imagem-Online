@@ -14,6 +14,7 @@ import PIL.Image as Image
 import cv2 as cv
 import base64
 import uvicorn
+from fastapi.middleware.cors import CORSMiddleware
 
 description = """
 API do projeto de atividades práticas supervisionadas (APS) de processamento de imagens.
@@ -33,6 +34,15 @@ app = FastAPI(
     title="API - Editor de imagens online",
     description=description
 )
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["DELETE" , "GET" , "POST" , "PUT" ],
+    allow_headers=["*"],
+)
+
 
 # Redireciona para a página principal de schemas do Fast API (Swagger)
 @app.get('/', include_in_schema=False)
