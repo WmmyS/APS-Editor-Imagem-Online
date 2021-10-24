@@ -102,11 +102,13 @@ async def efects(
     try:
         return_img = efect.SelectAndApplyEffect(efeito, img, intensidade)
         _, encoded_img = cv.imencode('.JPG', return_img)
-        cimg = io.BytesIO(encoded_img)
-        return StreamingResponse(
+        #cimg = io.BytesIO(encoded_img)
+        encoded_img = base64.b64encode(encoded_img)
+        return encoded_img
+        """ return StreamingResponse(
         cimg,
         media_type="image/jpg"
-        )
+        ) """
     except:
         return JSONResponse(
             status_code=400,
