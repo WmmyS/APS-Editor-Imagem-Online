@@ -68,19 +68,31 @@ async def style(content_image: bytes = File(...),
 class Efeitos(str, Enum):
     ef1 = "Desfoque"
     ef2 = "Blur"
-    ef3 = "Blur_bilateral"
-    ef5 = "Escala_cinza"
-    ef6 = "Ajuste_brilho"
+    ef3 = "Blur bilateral"
+    ef5 = "Escala cinza"
+    ef6 = "Ajuste brilho"
     ef7 = "Pintura"
-    ef8 = "Foto_sepia"
+    ef8 = "Foto sepia"
     ef9 = "HDR"
-    ef10 = "Inverter_Cores"
-    ef11 = "Cores_Quentes"
-    ef12 = "Cores_frias"
-    ef13 = "Desenho_lapis"
-    ef14 = "Desenho_lapis_cores"
-    ef15 = "Filtro_cartoon"
-    ef16 = "Cartoon_HDR"
+    ef10 = "Inverter Cores"
+    ef11 = "Cores Quentes"
+    ef12 = "Cores frias"
+    ef13 = "Desenho lapis"
+    ef14 = "Desenho lapis cores"
+    ef15 = "Filtro cartoon"
+    ef16 = "Cartoon HDR"
+
+@app.get('/listarefeitos')
+def print():
+    try:
+        return list(Efeitos)
+    except:
+        return JSONResponse(
+            status_code=400,
+            content={"message": f"Oops! Código de filtro ou parâmetro de intensidade incorreto!"}
+        )
+    
+
 
 @app.post('/efeitos')
 async def efects(
