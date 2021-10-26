@@ -15,6 +15,7 @@ import cv2 as cv
 import base64
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 description = """
 API do projeto de atividades práticas supervisionadas (APS) de processamento de imagens.
@@ -29,7 +30,6 @@ Integrantes do grupo:
 Conteúdo didático para apresentação de projeto.
 
 """
-
 app = FastAPI(
     title="API - Editor de imagens online",
     description=description
@@ -42,7 +42,6 @@ app.add_middleware(
     allow_methods=["DELETE" , "GET" , "POST" , "PUT" ],
     allow_headers=["*"],
 )
-
 
 # Redireciona para a página principal de schemas do Fast API (Swagger)
 @app.get('/', include_in_schema=False)
@@ -91,45 +90,45 @@ def print():
             status_code=400,
             content={"message": f"Oops! Código de filtro ou parâmetro de intensidade incorreto!"}
         )
-    
 
+# Objeto para receber a string do código base64 no corpo da requisição
+class Item(BaseModel):
+    code: str
 
 @app.post('/efeitos')
 async def efects(
     efeito: Efeitos,
     intensidade: int ,
-    content_image: bytes = File(...)):
+    content_image: Item ):
 
     """ Recebe uma imagem, numeração do efeito e intensidade para aplicá-lo e retorna a imagem tratada. """
 
-    #Converte os bytes recebidos para um array de bytes.
-    nparr= np.fromstring(content_image, np.uint8)
+    try:
+        # Decodifica de uma string de código base64 para um buffer de imagem
+        content_image = base64.b64decode(content_image.code)
 
-    # Decodifica o array de bytes para uma imagem.
-    img = cv.imdecode(nparr, cv.IMREAD_COLOR)
+        # Converte de buffer para um byte-array de imagem
+        content_image = np.frombuffer(content_image, np.uint8)
 
-    #img_dimensions = str(img.shape)
+        # Decodifica o array em imagem
+        content_image = cv.imdecode(content_image, cv.IMREAD_COLOR)
+    except:
+        return JSONResponse(
+            status_code=400,
+            content={"message" : f"Erro! Código de imagem base64 corrompido!"}
+        )
 
     # Aplica o efeito escolhido na imagem e retorna bytes_array da imagem
     try:
-        return_img = efect.SelectAndApplyEffect(efeito, img, intensidade)
+        return_img = efect.SelectAndApplyEffect(efeito, content_image, intensidade)
         _, encoded_img = cv.imencode('.JPG', return_img)
-        #cimg = io.BytesIO(encoded_img)
         encoded_img = base64.b64encode(encoded_img)
         return encoded_img
-        """ return StreamingResponse(
-        cimg,
-        media_type="image/jpg"
-        ) """
     except:
         return JSONResponse(
             status_code=400,
             content={"message": f"Oops! Código de filtro ou parâmetro de intensidade incorreto!"}
         )
-
-    #encoded_img = base64.b64encode(encoded_img)
-    
-    #encoded_img
 
 if __name__ == '__main__':
 
