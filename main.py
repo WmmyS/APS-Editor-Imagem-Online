@@ -76,8 +76,8 @@ class Efeitos(str, Enum):
     ef10 = "Inverter Cores"
     ef11 = "Cores Quentes"
     ef12 = "Cores frias"
-    ef13 = "Desenho lapis"
-    ef14 = "Desenho lapis cores"
+    ef13 = "Lapis"
+    ef14 = "Lapis Cores"
     ef15 = "Filtro cartoon"
     ef16 = "Cartoon HDR"
 
@@ -118,8 +118,13 @@ async def efects(
             content={"message" : f"Erro! Código de imagem base64 corrompido!"}
         )
 
+    return_img = efect.SelectAndApplyEffect(efeito, content_image, intensidade)
+    _, encoded_img = cv.imencode('.JPG', return_img)
+    encoded_img = base64.b64encode(encoded_img)
+    return encoded_img
+
     # Aplica o efeito escolhido na imagem e retorna bytes_array da imagem
-    try:
+    """ try:
         return_img = efect.SelectAndApplyEffect(efeito, content_image, intensidade)
         _, encoded_img = cv.imencode('.JPG', return_img)
         encoded_img = base64.b64encode(encoded_img)
@@ -128,7 +133,7 @@ async def efects(
         return JSONResponse(
             status_code=400,
             content={"message": f"Oops! Código de filtro ou parâmetro de intensidade incorreto!"}
-        )
+        ) """
 
 if __name__ == '__main__':
 
