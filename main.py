@@ -65,11 +65,11 @@ async def style(content_image: bytes = File(...),
     )
 
 class Efeitos(str, Enum):
-    ef1 = "Desfoque"
+    ef1 = "Filtro cartoon"
     ef2 = "Blur"
     ef3 = "Blur bilateral"
     ef5 = "Escala cinza"
-    ef6 = "Ajuste brilho"
+    ef6 = "Cartoon HDR"
     ef7 = "Pintura"
     ef8 = "Foto sepia"
     ef9 = "HDR"
@@ -78,8 +78,6 @@ class Efeitos(str, Enum):
     ef12 = "Cores frias"
     ef13 = "Lapis"
     ef14 = "Lapis Cores"
-    ef15 = "Filtro cartoon"
-    ef16 = "Cartoon HDR"
 
 @app.get('/listarefeitos')
 def print():
