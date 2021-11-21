@@ -15,6 +15,7 @@ import cv2 as cv
 import base64
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 description = """
 API do projeto de atividades práticas supervisionadas (APS) de processamento de imagens.
@@ -29,7 +30,6 @@ Integrantes do grupo:
 Conteúdo didático para apresentação de projeto.
 
 """
-
 app = FastAPI(
     title="API - Editor de imagens online",
     description=description
@@ -42,7 +42,6 @@ app.add_middleware(
     allow_methods=["DELETE" , "GET" , "POST" , "PUT" ],
     allow_headers=["*"],
 )
-
 
 # Redireciona para a página principal de schemas do Fast API (Swagger)
 @app.get('/', include_in_schema=False)
@@ -66,56 +65,73 @@ async def style(content_image: bytes = File(...),
     )
 
 class Efeitos(str, Enum):
-    ef1 = "Desfoque"
+    ef1 = "Filtro cartoon"
     ef2 = "Blur"
-    ef3 = "Blur_bilateral"
-    ef5 = "Escala_cinza"
-    ef6 = "Ajuste_brilho"
+    ef3 = "Blur bilateral"
+    ef5 = "Escala cinza"
+    ef6 = "Cartoon HDR"
     ef7 = "Pintura"
-    ef8 = "Foto_sepia"
+    ef8 = "Foto sepia"
     ef9 = "HDR"
-    ef10 = "Inverter_Cores"
-    ef11 = "Cores_Quentes"
-    ef12 = "Cores_frias"
-    ef13 = "Desenho_lapis"
-    ef14 = "Desenho_lapis_cores"
-    ef15 = "Filtro_cartoon"
-    ef16 = "Cartoon_HDR"
+    ef10 = "Inverter Cores"
+    ef11 = "Cores Quentes"
+    ef12 = "Cores frias"
+    ef13 = "Lapis"
+    ef14 = "Lapis Cores"
 
-@app.post('/efeitos')
-async def efects(
-    efeito: Efeitos,
-    intensidade: int ,
-    content_image: bytes = File(...)):
-
-    """ Recebe uma imagem, numeração do efeito e intensidade para aplicá-lo e retorna a imagem tratada. """
-
-    #Converte os bytes recebidos para um array de bytes.
-    nparr= np.fromstring(content_image, np.uint8)
-
-    # Decodifica o array de bytes para uma imagem.
-    img = cv.imdecode(nparr, cv.IMREAD_COLOR)
-
-    #img_dimensions = str(img.shape)
-
-    # Aplica o efeito escolhido na imagem e retorna bytes_array da imagem
+@app.get('/listarefeitos')
+def print():
     try:
-        return_img = efect.SelectAndApplyEffect(efeito, img, intensidade)
-        _, encoded_img = cv.imencode('.JPG', return_img)
-        cimg = io.BytesIO(encoded_img)
-        return StreamingResponse(
-        cimg,
-        media_type="image/jpg"
-        )
+        return list(Efeitos)
     except:
         return JSONResponse(
             status_code=400,
             content={"message": f"Oops! Código de filtro ou parâmetro de intensidade incorreto!"}
         )
 
-    #encoded_img = base64.b64encode(encoded_img)
-    
-    #encoded_img
+# Objeto para receber a string do código base64 no corpo da requisição
+class Item(BaseModel):
+    code: str
+
+@app.post('/efeitos')
+async def efects(
+    efeito: Efeitos,
+    intensidade: int ,
+    content_image: Item ):
+
+    """ Recebe uma imagem, numeração do efeito e intensidade para aplicá-lo e retorna a imagem tratada. """
+
+    try:
+        # Decodifica de uma string de código base64 para um buffer de imagem
+        content_image = base64.b64decode(content_image.code)
+
+        # Converte de buffer para um byte-array de imagem
+        content_image = np.frombuffer(content_image, np.uint8)
+
+        # Decodifica o array em imagem
+        content_image = cv.imdecode(content_image, cv.IMREAD_COLOR)
+    except:
+        return JSONResponse(
+            status_code=400,
+            content={"message" : f"Erro! Código de imagem base64 corrompido!"}
+        )
+
+    return_img = efect.SelectAndApplyEffect(efeito, content_image, intensidade)
+    _, encoded_img = cv.imencode('.JPG', return_img)
+    encoded_img = base64.b64encode(encoded_img)
+    return encoded_img
+
+    # Aplica o efeito escolhido na imagem e retorna bytes_array da imagem
+    """ try:
+        return_img = efect.SelectAndApplyEffect(efeito, content_image, intensidade)
+        _, encoded_img = cv.imencode('.JPG', return_img)
+        encoded_img = base64.b64encode(encoded_img)
+        return encoded_img
+    except:
+        return JSONResponse(
+            status_code=400,
+            content={"message": f"Oops! Código de filtro ou parâmetro de intensidade incorreto!"}
+        ) """
 
 if __name__ == '__main__':
 
